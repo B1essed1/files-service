@@ -1,0 +1,37 @@
+server:
+  port: 9070
+spring:
+  application:
+    name: file-upload
+  jpa:
+    #    show-sql: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        show-sql: true
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        enable_lazy_load_no_trans: true
+        generate_statistics: false
+        format_sql: true
+        jdbc:
+        lob:
+        non_contextual_creation: true
+  datasource:
+      type: com.zaxxer.hikari.HikariDataSource
+      url: jdbc:postgresql://localhost:5432/postgres
+      username: ${db_username:user}
+      password: ${db_password:user}
+      hikari:
+        poolName: Hikari
+        auto-commit: false
+
+file:
+   server:
+      url: localhost
+      port: 8080
+      username: user
+      password: user
+      directory: /
