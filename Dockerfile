@@ -6,7 +6,10 @@ ENV TZ=Asia/Tashkent
 RUN apk update && apk upgrade && apk add ca-certificates && update-ca-certificates && apk add --update tzdata
 RUN rm -rf /var/cache/apk/*
 
-COPY target/gateway.jar gateway.jar
+COPY target/app.jar app.jar
+
+ENV SERVICE_PROFILE dev
+
 ENTRYPOINT ["java","-jar","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9073","app.jar"]
-#docker build -t :latest .
-#docker push :latest
+#docker build -t registry.gitlab.com/project.gov.uz/backend/file-service:lastest .
+#docker push registry.gitlab.com/project.gov.uz/backend/file-service:lastest
