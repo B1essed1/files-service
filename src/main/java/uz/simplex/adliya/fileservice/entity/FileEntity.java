@@ -1,18 +1,19 @@
 package uz.simplex.adliya.fileservice.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import uz.simplex.adliya.base.entity.AbstractAuditingEntity;
 
 import javax.persistence.*;
 
+
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Entity
+@Table(name = "files")
+public class FileEntity extends AbstractAuditingEntity {
 
-public class File extends AbstractAuditingEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)

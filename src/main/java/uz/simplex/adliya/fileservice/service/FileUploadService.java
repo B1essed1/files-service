@@ -1,6 +1,5 @@
 package uz.simplex.adliya.fileservice.service;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uz.simplex.adliya.base.exception.ExceptionWithStatusCode;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
-import uz.simplex.adliya.fileservice.entity.File;
+import uz.simplex.adliya.fileservice.entity.FileEntity;
 import uz.simplex.adliya.fileservice.repos.FileRepository;
 
 import javax.xml.bind.DatatypeConverter;
@@ -21,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Service
-
 public class FileUploadService {
 
 
@@ -33,10 +31,13 @@ public class FileUploadService {
 
     @Value("file.server.url")
     private String url;
+
     @Value("file.server.port")
     private String port;
+
     @Value("file.server.username")
     private String username;
+
     @Value("file.server.password")
     private String password;
 
@@ -52,9 +53,8 @@ public class FileUploadService {
             throw new RuntimeException(e);
         }
         byte[] digest = md.digest(word.getBytes(StandardCharsets.UTF_8));
-        String sha256 = DatatypeConverter.printHexBinary(digest).toLowerCase();
 
-        return sha256;
+        return DatatypeConverter.printHexBinary(digest).toLowerCase();
     }
 
     public String uploadFile(MultipartFile file) {
@@ -80,7 +80,7 @@ public class FileUploadService {
             String month = dateFormatMonth.format(currentDate);
             String day = dateFormatDay.format(currentDate);
 
-            File entity = new File();
+            FileEntity entity = new FileEntity();
             String remoteDirectory = "/" + year + "/" + month + "/" + day;
 
 

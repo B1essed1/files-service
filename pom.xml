@@ -8,7 +8,6 @@
         <version>0.0.1-SNAPSHOT</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>uz.simplex.adliya</groupId>
     <artifactId>file-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>file-service</name>
@@ -42,6 +41,7 @@
     </dependencies>
 
     <build>
+        <finalName>app</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

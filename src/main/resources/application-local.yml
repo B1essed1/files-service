@@ -1,0 +1,10 @@
+spring:
+    # file-service
+  jpa:
+    properties:
+      hibernate.default_schema: ${DB_SCHEMA:file_service}
+
+logging:
+  level:
+    com.netflix.eureka: error
+    root: info
