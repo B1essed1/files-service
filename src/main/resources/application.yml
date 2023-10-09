@@ -76,6 +76,12 @@ eureka:
     instance-id: ${spring.application.name}:${random.int[1,999999]}
     lease-renewal-interval-in-seconds: 5
 
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /docs/file/v2/api-docs
+
 file:
   server:
     url: localhost
