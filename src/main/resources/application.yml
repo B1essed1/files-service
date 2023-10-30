@@ -80,7 +80,7 @@ springfox:
   documentation:
     swagger:
       v2:
-        path: /docs/file/v2/api-docs
+        path: /docs/file-service/v2/api-docs
 
 file:
   server:
