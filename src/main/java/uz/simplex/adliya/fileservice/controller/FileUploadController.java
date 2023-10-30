@@ -10,7 +10,7 @@ import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 import uz.simplex.adliya.fileservice.dto.SimpleResponse;
 import uz.simplex.adliya.fileservice.service.FileUploadService;
 
-@RequestMapping("/api/file/v1")
+@RequestMapping("/api/file-service/v1")
 @RestController
 public class FileUploadController {
 
