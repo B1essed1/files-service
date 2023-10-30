@@ -3,16 +3,18 @@ package uz.simplex.adliya.fileservice.service;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uz.simplex.adliya.base.exception.ExceptionWithStatusCode;
+import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 import uz.simplex.adliya.fileservice.entity.FileEntity;
 import uz.simplex.adliya.fileservice.repos.FileRepository;
 
 import javax.xml.bind.DatatypeConverter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,19 +31,19 @@ public class FileUploadService {
         this.fileRepository = fileRepository;
     }
 
-    @Value("file.server.url")
+    @Value("${file.server.url}")
     private String url;
 
-    @Value("file.server.port")
+    @Value("${file.server.port}")
     private String port;
 
-    @Value("file.server.username")
+    @Value("${file.server.username}")
     private String username;
 
-    @Value("file.server.password")
+    @Value("${file.server.password}")
     private String password;
 
-    @Value("file.server.directory")
+    @Value("${file.server.directory}")
     private String directoryName;
 
     private String createSha256(String word) {
@@ -81,13 +83,14 @@ public class FileUploadService {
             String day = dateFormatDay.format(currentDate);
 
             FileEntity entity = new FileEntity();
-            String remoteDirectory = "/" + year + "/" + month + "/" + day;
+            String yearDirectory = directoryName + "/" + year;
+            createRemoteDirectory(ftpClient, year);
+            String monthDirectory = yearDirectory + "/" + month;
+            createRemoteDirectory(ftpClient, month);
 
+            String dayDirectory = monthDirectory + "/" + day;
+            createRemoteDirectory(ftpClient, day);
 
-            // Specify the remote directory structure (e.g., /year/month/day)
-
-            // Ensure the remote directory exists, create it if needed
-            createRemoteDirectory(ftpClient, remoteDirectory);
 
             // Upload a file
             String originalName = file.getOriginalFilename();
@@ -95,12 +98,13 @@ public class FileUploadService {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             boolean success = ftpClient.storeFile(originalName, inputStream);
             inputStream.close();
-            String previewUrl = "";
+            String previewUrl;
             String downloadUrl;
-            String sha256Hash="";
+            String sha256Hash;
             if (success) {
                 // Generate SHA-256 hash for the file
-                 sha256Hash = createSha256(file.getName());
+                sha256Hash = createSha256(file.getOriginalFilename());
+//                fileRepository.deleteAllBySha256(sha256Hash);
 
                 // Construct preview and download URLs
                 previewUrl = url + "/preview/" + sha256Hash;
@@ -111,7 +115,7 @@ public class FileUploadService {
                 entity.setName(file.getName());
                 entity.setFileSize(String.valueOf(file.getSize()));
                 entity.setContentType(file.getContentType());
-                entity.setPath(remoteDirectory);
+                entity.setPath(dayDirectory);
                 entity.setSha256(sha256Hash);
                 entity.setOriginalName(file.getOriginalFilename());
                 entity.setHashId(null);
@@ -125,7 +129,7 @@ public class FileUploadService {
             // Disconnect from the FTP server
             ftpClient.logout();
             ftpClient.disconnect();
-            return previewUrl;
+            return entity.getSha256();
 
         } catch (IOException e) {
             throw new ExceptionWithStatusCode(400, "File.upload.failed");
@@ -163,5 +167,39 @@ public class FileUploadService {
     public FileUploadResponse upload(MultipartFile file) {
         return new FileUploadResponse(uploadFile(file));
 
+    }
+
+    public ResponseEntity<FilePreviewResponse> preview(String code) {
+        FileEntity fileEntity = fileRepository.findBySha256(code)
+                .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
+
+        try {
+            FTPClient ftpClient = new FTPClient();
+            ftpClient.connect(url);
+            ftpClient.login(username, password);
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            boolean success = ftpClient.retrieveFile(fileEntity.getPath()+"/"+fileEntity.getOriginalName(), outputStream);
+            ftpClient.logout();
+            ftpClient.disconnect();
+
+            if (success) {
+                byte[] fileData = outputStream.toByteArray();
+//                ByteArrayResource resource = new ByteArrayResource(fileData);
+
+                return  ResponseEntity.ok()
+                        .header("Content-Disposition", "attachment; filename=" + new File(fileEntity.getPath()+"/"+fileEntity.getOriginalName()).getName())
+                        .body(new FilePreviewResponse(fileData));
+//                return new FilePreviewResponse( ResponseEntity.ok()
+//                        .header("Content-Disposition", "attachment; filename=" + new File(fileEntity.getPath()).getName())
+//                        .body(outputStream.toByteArray()));
+            } else {
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

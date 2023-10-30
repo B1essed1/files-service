@@ -84,8 +84,12 @@ springfox:
 
 file:
   server:
-    url: localhost
-    port: 8080
-    username: user
-    password: user
-    directory: /
+    url: 165.232.122.8
+    port: 21
+    username: ftpclient
+    password: ftpclient
+    directory: /upload
+
+
+oauth:
+  whiteList:
