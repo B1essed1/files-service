@@ -1,13 +1,11 @@
 package uz.simplex.adliya.fileservice.controller;
 
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
-import uz.simplex.adliya.fileservice.dto.SimpleResponse;
 import uz.simplex.adliya.fileservice.service.FileUploadService;
 
 @RequestMapping("/api/file-service/v1")
@@ -25,13 +23,15 @@ public class FileUploadController {
         return fileUploadService.upload(multipartFile);
     }
     @GetMapping("/preview")
-    public ResponseEntity<FilePreviewResponse> preview(@RequestParam String path) {
-        return fileUploadService.preview(path);
+    public FilePreviewResponse preview(@RequestParam String code) {
+        return fileUploadService.preview(code);
     }
 
-    @GetMapping("hi")
-    public SimpleResponse hi() {
-        return new SimpleResponse();
+    @GetMapping("/download")
+    public ResponseEntity<byte[]> download(@RequestParam String code) {
+
+         return fileUploadService.download(code);
+
     }
 
 }

@@ -7,19 +7,23 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 import uz.simplex.adliya.base.exception.ExceptionWithStatusCode;
 import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 import uz.simplex.adliya.fileservice.entity.FileEntity;
 import uz.simplex.adliya.fileservice.repos.FileRepository;
 
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 @Service
 public class FileUploadService {
@@ -99,40 +103,36 @@ public class FileUploadService {
             boolean success = ftpClient.storeFile(originalName, inputStream);
             inputStream.close();
             String previewUrl;
-            String downloadUrl;
             String sha256Hash;
             if (success) {
-                // Generate SHA-256 hash for the file
                 sha256Hash = createSha256(file.getOriginalFilename()+System.currentTimeMillis());
-//                fileRepository.deleteAllBySha256(sha256Hash);
 
-                // Construct preview and download URLs
-                previewUrl = url + "/preview/" + sha256Hash;
-                downloadUrl = url + "/download/" + sha256Hash;
-
-                System.out.println("Preview URL: " + previewUrl);
-                System.out.println("Download URL: " + downloadUrl);
+                UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath(url + "/api/file-service/v1/preview")
+                        .port(50000)
+                        .queryParam(sha256Hash);
+                previewUrl = uriBuilder.toUriString();
+                String originalFilename = file.getOriginalFilename();
+                entity.setExtension(Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".") + 1));
                 entity.setName(file.getName());
                 entity.setFileSize(String.valueOf(file.getSize()));
                 entity.setContentType(file.getContentType());
                 entity.setPath(dayDirectory);
                 entity.setSha256(sha256Hash);
-                entity.setOriginalName(file.getOriginalFilename());
+                entity.setOriginalName(originalFilename);
                 entity.setHashId(null);
                 entity.setInnerUrl(previewUrl);
-                // TODO: 26/09/23 ask this column
                 fileRepository.save(entity);
             } else {
-                throw new ExceptionWithStatusCode(400, "File.upload.failed");
+                throw new ExceptionWithStatusCode(400, "file.upload.failed");
             }
 
             // Disconnect from the FTP server
             ftpClient.logout();
             ftpClient.disconnect();
-            return entity.getSha256();
+            return previewUrl;
 
         } catch (IOException e) {
-            throw new ExceptionWithStatusCode(400, "File.upload.failed");
+            throw new ExceptionWithStatusCode(400, "file.upload.failed");
         }
 
 
@@ -142,12 +142,12 @@ public class FileUploadService {
         if (!directoryExists(ftpClient, remoteDirectory)) {
             boolean b = ftpClient.makeDirectory(remoteDirectory);
             if (!b) {
-                throw new IOException("Failed to create remote directory: " + remoteDirectory);
+                throw new ExceptionWithStatusCode(400,"file.upload.directory.create.failed");
 
             }
         }
         if (!ftpClient.changeWorkingDirectory(remoteDirectory)) {
-            throw new IOException("Failed to create remote directory: " + remoteDirectory);
+            throw new ExceptionWithStatusCode(400,"file.upload.directory.create.failed");
         }
 
     }
@@ -169,7 +169,7 @@ public class FileUploadService {
 
     }
 
-    public ResponseEntity<FilePreviewResponse> preview(String code) {
+    public ResponseEntity<byte[]> download(String code) {
         FileEntity fileEntity = fileRepository.findBySha256(code)
                 .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
 
@@ -186,14 +186,11 @@ public class FileUploadService {
 
             if (success) {
                 byte[] fileData = outputStream.toByteArray();
-//                ByteArrayResource resource = new ByteArrayResource(fileData);
 
                 return  ResponseEntity.ok()
                         .header("Content-Disposition", "attachment; filename=" + new File(fileEntity.getPath()+"/"+fileEntity.getOriginalName()).getName())
-                        .body(new FilePreviewResponse(fileData));
-//                return new FilePreviewResponse( ResponseEntity.ok()
-//                        .header("Content-Disposition", "attachment; filename=" + new File(fileEntity.getPath()).getName())
-//                        .body(outputStream.toByteArray()));
+                        .body(fileData);
+
             } else {
                 return null;
             }
@@ -201,5 +198,21 @@ public class FileUploadService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public FilePreviewResponse preview(String code) {
+
+        FileEntity fileEntity = fileRepository.findBySha256(code)
+                .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath(url + "/api/file-service/v1/download")
+                .port(50000)
+                .queryParam(fileEntity.getSha256());
+
+     return   new FilePreviewResponse(
+               uriBuilder.toUriString(),
+               fileEntity.getExtension(),
+               fileEntity.getOriginalName(),
+               fileEntity.getFileSize()
+       );
     }
 }
