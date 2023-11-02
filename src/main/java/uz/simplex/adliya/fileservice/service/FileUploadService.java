@@ -103,7 +103,7 @@ public class FileUploadService {
             String sha256Hash;
             if (success) {
                 // Generate SHA-256 hash for the file
-                sha256Hash = createSha256(file.getOriginalFilename());
+                sha256Hash = createSha256(file.getOriginalFilename()+System.currentTimeMillis());
 //                fileRepository.deleteAllBySha256(sha256Hash);
 
                 // Construct preview and download URLs
