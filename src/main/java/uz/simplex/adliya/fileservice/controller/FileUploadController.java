@@ -24,7 +24,7 @@ public class FileUploadController {
     public FileUploadResponse upload(@RequestPart MultipartFile multipartFile) {
         return fileUploadService.upload(multipartFile);
     }
-    @PostMapping("/preview")
+    @GetMapping("/preview")
     public ResponseEntity<FilePreviewResponse> preview(@RequestParam String path) {
         return fileUploadService.preview(path);
     }
