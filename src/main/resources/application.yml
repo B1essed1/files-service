@@ -92,4 +92,4 @@ file:
 
 
 oauth:
-  whiteList:
+  whiteList: /api/file-service/v1/download
