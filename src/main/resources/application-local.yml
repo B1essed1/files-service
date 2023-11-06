@@ -3,6 +3,8 @@ spring:
   jpa:
     properties:
       hibernate.default_schema: ${DB_SCHEMA:file_service}
+  application:
+    name: ${SERVICE_NAME:file-service-local}
 
 logging:
   level:

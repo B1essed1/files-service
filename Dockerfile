@@ -8,8 +8,6 @@ RUN rm -rf /var/cache/apk/*
 
 COPY target/app.jar app.jar
 
-ENV SERVICE_PROFILE dev
-
 ENTRYPOINT ["java","-jar","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:60002","app.jar"]
 #docker build -t registry.gitlab.com/project.gov.uz/backend/file-service:lastest .
 #docker push registry.gitlab.com/project.gov.uz/backend/file-service:lastest
