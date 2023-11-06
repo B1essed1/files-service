@@ -1,5 +1,6 @@
 package uz.simplex.adliya.fileservice.controller;
 
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -7,6 +8,9 @@ import org.springframework.web.multipart.MultipartFile;
 import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 import uz.simplex.adliya.fileservice.service.FileUploadService;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @RequestMapping("/api/file-service/v1")
 @RestController
@@ -28,9 +32,10 @@ public class FileUploadController {
     }
 
     @GetMapping("/download")
-    public ResponseEntity<byte[]> download(@RequestParam String code) {
+    public ResponseEntity<Resource> download(@RequestParam String code, HttpServletRequest request
+                                             ) {
 
-         return fileUploadService.download(code);
+         return fileUploadService.download(code,request);
 
     }
 

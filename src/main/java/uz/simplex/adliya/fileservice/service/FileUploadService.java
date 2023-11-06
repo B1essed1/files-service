@@ -4,6 +4,9 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,10 +17,10 @@ import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 import uz.simplex.adliya.fileservice.entity.FileEntity;
 import uz.simplex.adliya.fileservice.repos.FileRepository;
 
-import javax.ws.rs.core.UriBuilder;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -169,7 +172,7 @@ public class FileUploadService {
 
     }
 
-    public ResponseEntity<byte[]> download(String code) {
+    public ResponseEntity<Resource> download(String code, HttpServletRequest request) {
         FileEntity fileEntity = fileRepository.findBySha256(code)
                 .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
 
@@ -184,12 +187,22 @@ public class FileUploadService {
             ftpClient.logout();
             ftpClient.disconnect();
 
+
             if (success) {
                 byte[] fileData = outputStream.toByteArray();
+                Resource resource = new ByteArrayResource(fileData);
+                String mimeType = fileEntity.getContentType();
+                // Set the appropriate content type
 
-                return  ResponseEntity.ok()
-                        .header("Content-Disposition", "attachment; filename=" + new File(fileEntity.getPath()+"/"+fileEntity.getOriginalName()).getName())
-                        .body(fileData);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=image." + ".jpeg");
+
+                headers.setContentType(MediaType.valueOf(mimeType)); // Adjust the MediaType as needed
+
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .body(resource);
+
 
             } else {
                 return null;
@@ -197,6 +210,22 @@ public class FileUploadService {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+    private MediaType getMediaType(String fileExtension) {
+        switch (fileExtension) {
+            case ".jpg":
+            case ".jpeg":
+                return MediaType.IMAGE_JPEG;
+            case ".png":
+                return MediaType.IMAGE_PNG;
+            case ".gif":
+                return MediaType.IMAGE_GIF;
+            case ".pdf":
+                return MediaType.APPLICATION_PDF;
+            // Add more cases for other supported image formats
+            default:
+                return MediaType.APPLICATION_OCTET_STREAM;
         }
     }
 
