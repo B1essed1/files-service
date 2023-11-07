@@ -110,8 +110,7 @@ public class FileUploadService {
             if (success) {
                 sha256Hash = createSha256(file.getOriginalFilename()+System.currentTimeMillis());
 
-                UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath(url + "/api/file-service/v1/preview")
-                        .port(50000)
+                UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://165.232.122.8:50000/api/file-service/v1/download")
                         .queryParam(sha256Hash);
                 previewUrl = uriBuilder.toUriString();
                 String originalFilename = file.getOriginalFilename();
@@ -195,7 +194,7 @@ public class FileUploadService {
                 // Set the appropriate content type
 
                 HttpHeaders headers = new HttpHeaders();
-                headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=image." + ".jpeg");
+                headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=image." + fileEntity.getExtension());
 
                 headers.setContentType(MediaType.valueOf(mimeType)); // Adjust the MediaType as needed
 
@@ -233,11 +232,11 @@ public class FileUploadService {
 
         FileEntity fileEntity = fileRepository.findBySha256(code)
                 .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath(url + "/api/file-service/v1/download")
-                .port(50000)
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://165.232.122.8:50000/api/file-service/v1/download")
                 .queryParam(fileEntity.getSha256());
 
-     return   new FilePreviewResponse(
+
+        return   new FilePreviewResponse(
                uriBuilder.toUriString(),
                fileEntity.getExtension(),
                fileEntity.getOriginalName(),
