@@ -111,7 +111,7 @@ public class FileUploadService {
                 sha256Hash = createSha256(file.getOriginalFilename()+System.currentTimeMillis());
 
                 UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://165.232.122.8:50000/api/file-service/v1/download")
-                        .queryParam(sha256Hash);
+                        .queryParam("code",sha256Hash);
                 previewUrl = uriBuilder.toUriString();
                 String originalFilename = file.getOriginalFilename();
                 entity.setExtension(Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".") + 1));
@@ -211,29 +211,12 @@ public class FileUploadService {
             return null;
         }
     }
-    private MediaType getMediaType(String fileExtension) {
-        switch (fileExtension) {
-            case ".jpg":
-            case ".jpeg":
-                return MediaType.IMAGE_JPEG;
-            case ".png":
-                return MediaType.IMAGE_PNG;
-            case ".gif":
-                return MediaType.IMAGE_GIF;
-            case ".pdf":
-                return MediaType.APPLICATION_PDF;
-            // Add more cases for other supported image formats
-            default:
-                return MediaType.APPLICATION_OCTET_STREAM;
-        }
-    }
-
     public FilePreviewResponse preview(String code) {
 
         FileEntity fileEntity = fileRepository.findBySha256(code)
                 .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://165.232.122.8:50000/api/file-service/v1/download")
-                .queryParam(fileEntity.getSha256());
+                .queryParam("code",fileEntity.getSha256());
 
 
         return   new FilePreviewResponse(
