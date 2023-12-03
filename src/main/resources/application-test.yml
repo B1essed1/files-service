@@ -1,0 +1,12 @@
+spring:
+    # file-service
+  jpa:
+    properties:
+      hibernate.default_schema: file_service
+
+logging:
+  level:
+    com.netflix.eureka: error
+    root: info
+#logging:
+#  config: classpath:log/log4j2.xml
