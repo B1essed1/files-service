@@ -64,6 +64,11 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:165.232.122.8}
+    port: ${RABBITMQ_PORT:5672}
+    username: guest
+    password: guest
 
 eureka:
   client:
