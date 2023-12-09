@@ -32,10 +32,10 @@ public class FileUploadController {
     }
 
     @GetMapping("/download")
-    public ResponseEntity<Resource> download(@RequestParam String code, HttpServletRequest request
+    public ResponseEntity<Resource> download(@RequestParam String code
                                              ) {
 
-         return fileUploadService.download(code,request);
+         return fileUploadService.download(code);
 
     }
 
