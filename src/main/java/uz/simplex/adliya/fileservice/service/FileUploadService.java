@@ -1,5 +1,10 @@
 package uz.simplex.adliya.fileservice.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,13 +17,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 import uz.simplex.adliya.base.exception.ExceptionWithStatusCode;
+import uz.simplex.adliya.fileservice.dto.CustomPngMultipartFile;
 import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 import uz.simplex.adliya.fileservice.entity.FileEntity;
 import uz.simplex.adliya.fileservice.repos.FileRepository;
 
+import javax.imageio.ImageIO;
 import javax.xml.bind.DatatypeConverter;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +35,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -126,9 +137,20 @@ public class FileUploadService {
         } catch (IOException e) {
             throw new ExceptionWithStatusCode(400, "file.upload.failed");
         }
+    }
 
+
+    public FileUploadResponse uploadFileAndQr(MultipartFile file, Boolean isQr){
+        if (!isQr){
+            return new FileUploadResponse(uploadFile(file));
+        } else {
+            String fileName = file.getOriginalFilename()+"qr";
+            MultipartFile qrFile = generateQr(uploadFile(file),fileName);
+            return new FileUploadResponse(uploadFile(qrFile));
+        }
 
     }
+
 
     private String makeDirectory(FTPClient ftpClient, Date currentDate) throws IOException {
         SimpleDateFormat dateFormatYear = new SimpleDateFormat("yyyy");
@@ -237,5 +259,39 @@ public class FileUploadService {
                 fileEntity.getOriginalName(),
                 fileEntity.getFileSize()
         );
+    }
+
+
+    public MultipartFile generateQr(String url, String fileName){
+        try {
+            BufferedImage image = generateQRCodeImage(url);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", baos);
+
+            return new CustomPngMultipartFile(baos.toByteArray(),fileName);
+        }catch (Exception e){
+            return null;
+        }
+    }
+
+    private  BufferedImage generateQRCodeImage(String text) throws WriterException {
+        Map<EncodeHintType, Object> hints = new HashMap<>();
+        hints.put(EncodeHintType.MARGIN, 0);
+
+        // Set error correction level to H (highest)
+        hints.put(EncodeHintType.ERROR_CORRECTION, com.google.zxing.qrcode.decoder.ErrorCorrectionLevel.M);
+
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 300, 300, hints);
+
+        BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < 300; x++) {
+            for (int y = 0; y < 300; y++) {
+                image.setRGB(x, y, bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
+            }
+        }
+
+        return image;
     }
 }

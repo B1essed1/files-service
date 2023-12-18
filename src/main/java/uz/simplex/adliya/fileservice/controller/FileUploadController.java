@@ -9,9 +9,6 @@ import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 import uz.simplex.adliya.fileservice.service.FileUploadService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 @RequestMapping("/api/file-service/v1")
 @RestController
 public class FileUploadController {
@@ -22,21 +19,20 @@ public class FileUploadController {
         this.fileUploadService = fileUploadService;
     }
 
-    @PostMapping(path = "/upload",produces = MediaType.APPLICATION_JSON_VALUE)
-    public FileUploadResponse upload(@RequestPart MultipartFile multipartFile) {
-        return fileUploadService.upload(multipartFile);
+    @PostMapping(path = "/upload", produces = MediaType.APPLICATION_JSON_VALUE)
+    public FileUploadResponse upload(@RequestPart MultipartFile multipartFile,
+                                     @RequestParam(value = "isQr", required = false, defaultValue = "false") Boolean isQr) {
+        return fileUploadService.uploadFileAndQr(multipartFile, isQr);
     }
+
     @GetMapping("/preview")
     public FilePreviewResponse preview(@RequestParam String code) {
         return fileUploadService.preview(code);
     }
 
     @GetMapping("/download")
-    public ResponseEntity<Resource> download(@RequestParam String code
-                                             ) {
-
+    public ResponseEntity<Resource> download(@RequestParam String code) {
          return fileUploadService.download(code);
-
     }
 
 }
