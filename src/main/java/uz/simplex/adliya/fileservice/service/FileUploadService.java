@@ -144,7 +144,7 @@ public class FileUploadService {
         if (!isQr){
             return new FileUploadResponse(uploadFile(file));
         } else {
-            String fileName = file.getOriginalFilename()+"qr";
+            String fileName ="qr"+ file.getOriginalFilename();
             MultipartFile qrFile = generateQr(uploadFile(file),fileName);
             return new FileUploadResponse(uploadFile(qrFile));
         }
