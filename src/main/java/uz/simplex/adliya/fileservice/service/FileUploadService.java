@@ -144,7 +144,7 @@ public class FileUploadService {
         if (!isQr){
             return new FileUploadResponse(uploadFile(file));
         } else {
-            String fileName ="qr"+ file.getOriginalFilename();
+            String fileName ="qr"+ file.getName();
             MultipartFile qrFile = generateQr(uploadFile(file),fileName);
             return new FileUploadResponse(uploadFile(qrFile));
         }
@@ -269,7 +269,7 @@ public class FileUploadService {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(image, "png", baos);
 
-            return new CustomPngMultipartFile(baos.toByteArray(),fileName);
+            return new CustomPngMultipartFile(baos.toByteArray(),fileName+".png");
         }catch (Exception e){
             return null;
         }
