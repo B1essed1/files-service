@@ -10,7 +10,7 @@ COPY target/app.jar app.jar
 
 ENTRYPOINT ["java","-jar","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:60002","app.jar"]
 #docker build -t registry.gitlab.com/project.gov.uz/backend/file-service:latest .
-#docker push registry.gitlab.com/project.gov.uz/backend/file-service:lastet
+#docker push registry.gitlab.com/project.gov.uz/backend/file-service:latest
 #TEST
 #docker build -t registry.gitlab.com/project.gov.uz/backend/file-service:latest-test .
-#docker push registry.gitlab.com/project.gov.uz/backend/file-service:lastet-test
+#docker push registry.gitlab.com/project.gov.uz/backend/file-service:latest-test
