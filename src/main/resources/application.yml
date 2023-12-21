@@ -1,0 +1,100 @@
+server:
+  shutdown: graceful
+  port: ${SERVICE_PORT:50002}
+
+spring:
+  application:
+    name: ${SERVICE_NAME:file-service}
+  profiles:
+    active: ${SERVICE_PROFILE:local}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  jpa:
+    #    show-sql: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+    properties:
+      org.hibernate.envers.audit_table_suffix: _HISTORY
+      org.hibernate.envers.revision_field_name: REVISION_ID
+      org.hibernate.envers.revision_type_field_name: REVISION_TYPE
+      org.hibernate.envers.store_data_at_delete: true
+      javax:
+        persistence:
+          query:
+            timeout: 30000
+      hibernate:
+        cache:
+          #          use_query_cache: false
+          use_second_level_cache: false
+        connection:
+          provider_disables_autocommit: true
+        #        id:
+        #          new_generator_mappings: true
+        #          optimizer:
+        #            pooled:
+        #              preferred: pooled-lo
+        #        show-sql: true
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        enable_lazy_load_no_trans: true
+        generate_statistics: false
+        format_sql: true
+        jdbc:
+          #          fetch_size: 50
+          #          batch_size: 20
+          lob:
+            non_contextual_creation: true
+  #        order_inserts: true
+  #        order_updates: true
+  #        query:
+  #          fail_on_pagination_over_collection_fetch: true
+  #          in_clause_parameter_padding: true
+  #        temp:
+  #          use_jdbc_metadata_defaults: false
+  #        use-new-id-generator-mappings: false
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://${DB_HOST:165.232.122.8}:${DB_PORT:5432}/${DB_NAME:simplex_adliya}
+    username: ${DB_USERNAME:simplex_adliya}
+    password: ${DB_PASSWORD:simplex_adliya}
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:165.232.122.8}
+    port: ${RABBITMQ_PORT:5672}
+    username: guest
+    password: guest
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOST:165.232.122.8}:${EUREKA_PORT:50001}/eureka/
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.int[1,999999]}
+    lease-renewal-interval-in-seconds: 5
+
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /docs/file-service/v2/api-docs
+
+file:
+  server:
+    url: 165.232.122.8
+    port: 21
+    username: ftpclient
+    password: ftpclient
+    directory: /upload
+
+
+oauth:
+  whiteList: /api/file-service/v1/download
