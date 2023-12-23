@@ -1,6 +1,6 @@
 spring:
   application:
-    name: ${SERVICE_NAME:file-service}
+    name: ${SERVICE_NAME:local-file-service}
   profiles:
     active: ${SERVICE_PROFILE:local}
   cloud:

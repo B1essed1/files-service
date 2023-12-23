@@ -8,5 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class FileUploadResponse {
+
     private String url;
+
 }

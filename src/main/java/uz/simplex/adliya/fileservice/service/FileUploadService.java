@@ -5,8 +5,6 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -27,10 +25,12 @@ import javax.imageio.ImageIO;
 import javax.xml.bind.DatatypeConverter;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -42,27 +42,22 @@ import java.util.Objects;
 @Service
 public class FileUploadService {
 
-
     private final FileRepository fileRepository;
+    /*  @Value("${file.server.url}")
+      private String url;
+      @Value("${file.server.port}")
+      private String port;
+      @Value("${file.server.username}")
+      private String username;
+      @Value("${file.server.password}")
+      private String password;*/
+    @Value("${file.server.directory}")
+    private String directoryName;
 
     public FileUploadService(FileRepository fileRepository) {
         this.fileRepository = fileRepository;
     }
 
-    @Value("${file.server.url}")
-    private String url;
-
-    @Value("${file.server.port}")
-    private String port;
-
-    @Value("${file.server.username}")
-    private String username;
-
-    @Value("${file.server.password}")
-    private String password;
-
-    @Value("${file.server.directory}")
-    private String directoryName;
 
     private String createSha256(String word) {
 
@@ -78,29 +73,21 @@ public class FileUploadService {
     }
 
     public String uploadFile(MultipartFile file) {
-
-
         try {
-            // Connect to FTP server
-            FTPClient ftpClient = new FTPClient();
-            ftpClient.connect(url, Integer.parseInt(port));
-            ftpClient.login(username, password);
 
-            // Specify the remote directory on the FTP server
-            ftpClient.changeWorkingDirectory(directoryName);
-            Date currentDate = new Date();
             FileEntity entity = new FileEntity();
+            Date currentDate = new Date();
 
 
             // Create date format to extract year, month, and day
-            String dayDirectory = makeDirectory(ftpClient, currentDate);
+            String dayDirectory = makeDirectory(currentDate);
 
             // Upload a file
             InputStream inputStream = file.getInputStream();
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+
             String fileName = String.valueOf(System.currentTimeMillis());
 
-            boolean success = ftpClient.storeFile(fileName, inputStream);
+            boolean success = storeFile(Path.of(dayDirectory + "/" + fileName), inputStream);
 
             inputStream.close();
 
@@ -129,9 +116,6 @@ public class FileUploadService {
                 throw new ExceptionWithStatusCode(400, "file.upload.failed");
             }
 
-            // Disconnect from the FTP server
-            ftpClient.logout();
-            ftpClient.disconnect();
             return previewUrl;
 
         } catch (IOException e) {
@@ -139,20 +123,27 @@ public class FileUploadService {
         }
     }
 
+    private boolean storeFile(Path target, InputStream inputStream) {
+        try {
+            Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
 
-    public FileUploadResponse uploadFileAndQr(MultipartFile file, Boolean isQr){
-        if (!isQr){
+    public FileUploadResponse uploadFileAndQr(MultipartFile file, Boolean isQr) {
+        if (!isQr) {
             return new FileUploadResponse(uploadFile(file));
         } else {
-            String fileName ="qr"+ file.getName();
-            MultipartFile qrFile = generateQr(uploadFile(file),fileName);
+            String fileName = "qr" + file.getName();
+            MultipartFile qrFile = generateQr(uploadFile(file), fileName);
             return new FileUploadResponse(uploadFile(qrFile));
         }
 
     }
 
-
-    private String makeDirectory(FTPClient ftpClient, Date currentDate) throws IOException {
+    private String makeDirectory(Date currentDate) throws IOException {
         SimpleDateFormat dateFormatYear = new SimpleDateFormat("yyyy");
         SimpleDateFormat dateFormatMonth = new SimpleDateFormat("MM");
         SimpleDateFormat dateFormatDay = new SimpleDateFormat("dd");
@@ -163,81 +154,40 @@ public class FileUploadService {
         String day = dateFormatDay.format(currentDate);
 
         String yearDirectory = directoryName + "/" + year;
-        createRemoteDirectory(ftpClient, year);
+
         String monthDirectory = yearDirectory + "/" + month;
-        createRemoteDirectory(ftpClient, month);
+
 
         String dayDirectory = monthDirectory + "/" + day;
-        createRemoteDirectory(ftpClient, day);
+        Files.createDirectories(Path.of(dayDirectory));
+
         return dayDirectory;
-    }
-
-    private static void createRemoteDirectory(FTPClient ftpClient, String remoteDirectory) throws IOException {
-        if (!directoryExists(ftpClient, remoteDirectory)) {
-            boolean b = ftpClient.makeDirectory(remoteDirectory);
-            if (!b) {
-                throw new ExceptionWithStatusCode(400, "file.upload.directory.create.failed");
-
-            }
-        }
-        if (!ftpClient.changeWorkingDirectory(remoteDirectory)) {
-            throw new ExceptionWithStatusCode(400, "file.upload.directory.create.failed");
-        }
-
-    }
-
-    private static boolean directoryExists(FTPClient ftpClient, String directoryName) throws IOException {
-        String[] directories = ftpClient.listNames();
-        if (directories != null) {
-            for (String dir : directories) {
-                if (dir.equals(directoryName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public FileUploadResponse upload(MultipartFile file) {
         return new FileUploadResponse(uploadFile(file));
-
     }
 
     public ResponseEntity<Resource> download(String code) {
         FileEntity fileEntity = fileRepository.findBySha256(code)
                 .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
 
+        String pathOfFile = fileEntity.getPath();
+        Path absolutePath = Path.of(pathOfFile + "/" + fileEntity.getName());
+
         try {
+            byte[] fileData = Files.readAllBytes(absolutePath);
+            Resource resource = new ByteArrayResource(fileData);
+            String mimeType = fileEntity.getContentType();
 
-            FTPClient ftpClient = new FTPClient();
-            ftpClient.connect(url);
-            ftpClient.login(username, password);
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileEntity.getOriginalName());
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            boolean success = ftpClient.retrieveFile(fileEntity.getPath() + "/" + fileEntity.getName(), outputStream);
-            ftpClient.logout();
-            ftpClient.disconnect();
+            headers.setContentType(MediaType.valueOf(mimeType));
 
-
-            if (success) {
-                byte[] fileData = outputStream.toByteArray();
-                Resource resource = new ByteArrayResource(fileData);
-                String mimeType = fileEntity.getContentType();
-
-                HttpHeaders headers = new HttpHeaders();
-                headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileEntity.getOriginalName());
-
-                headers.setContentType(MediaType.valueOf(mimeType));
-
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .body(resource);
-
-
-            } else {
-                return null;
-            }
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -262,20 +212,20 @@ public class FileUploadService {
     }
 
 
-    public MultipartFile generateQr(String url, String fileName){
+    public MultipartFile generateQr(String url, String fileName) {
         try {
             BufferedImage image = generateQRCodeImage(url);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(image, "png", baos);
 
-            return new CustomPngMultipartFile(baos.toByteArray(),fileName+".png");
-        }catch (Exception e){
+            return new CustomPngMultipartFile(baos.toByteArray(), fileName + ".png");
+        } catch (Exception e) {
             return null;
         }
     }
 
-    private  BufferedImage generateQRCodeImage(String text) throws WriterException {
+    private BufferedImage generateQRCodeImage(String text) throws WriterException {
         Map<EncodeHintType, Object> hints = new HashMap<>();
         hints.put(EncodeHintType.MARGIN, 0);
 
