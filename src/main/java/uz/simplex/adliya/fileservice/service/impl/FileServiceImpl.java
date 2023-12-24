@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
+import uz.simplex.adliya.base.exception.ExceptionWithStatusCode;
 import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 import uz.simplex.adliya.fileservice.entity.FileEntity;
@@ -11,15 +12,16 @@ import uz.simplex.adliya.fileservice.repos.FileRepository;
 import uz.simplex.adliya.fileservice.service.FileService;
 
 import javax.xml.bind.DatatypeConverter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import static uz.simplex.adliya.fileservice.utils.CONSTANTS.BASE_DIR;
 import static uz.simplex.adliya.fileservice.utils.CONSTANTS.BASE_URL;
 
 @Service
@@ -38,16 +40,29 @@ public class FileServiceImpl implements FileService {
         return null;
     }
 
+    private String uploadFile(MultipartFile file) {
+        Path path = makeDir(file);
+
+        try {
+            file.transferTo(path.toFile());
+
+        } catch (IOException e) {
+            throw new ExceptionWithStatusCode(400, "file.save.error");
+        }
+
+
+    }
+
     @Override
     public FilePreviewResponse preview(String code) {
         return null;
     }
 
-    private boolean saveEntity(MultipartFile file, String fileName, String dayDirectory){
+    private boolean saveEntity(MultipartFile file) {
         FileEntity entity = new FileEntity();
         String sha256Hash = createSha256(file.getOriginalFilename() + System.currentTimeMillis());
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(BASE_URL+"/api/file-service/v1/download")
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(BASE_URL + "/api/file-service/v1/download")
                 .queryParam("code", sha256Hash);
 
         String previewUrl = uriBuilder.toUriString();
@@ -67,7 +82,6 @@ public class FileServiceImpl implements FileService {
     }
 
 
-
     private String createSha256(String word) {
 
         MessageDigest md = null;
@@ -82,22 +96,34 @@ public class FileServiceImpl implements FileService {
     }
 
 
-    private String makeDir(){
+    /**
+     * Base directory da yangi path yaratadi
+     * year
+     * --month
+     *  ------day
+     *  korinishida, path kunda bir marta yaraladi
+     *  agar bolsa tekshirib shu bor path qaytariladi
+     *
+     */
+
+    private Path makeDir(MultipartFile file) {
+
         LocalDateTime now = LocalDateTime.now();
         String year = String.valueOf(now.getYear());
         String month = now.getMonth().name();
         String day = String.valueOf(now.getDayOfMonth());
-        Path path = Paths.get(String.format("%s/%s/%s", year, month, day));
-       if (Files.exists(path)){
-           return path.toString();
-       } else {
-           try {
-               Files.createDirectories(path);
-               return path.toString();
-           } catch (Exception e){
-               log.error("FILE DIRECTORY CREATE { }", e);
-           }
-       }
-       return "";
+        Path path = Path.of(BASE_DIR, year, month, day, file.getOriginalFilename());
+        try {
+
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+            return path;
+
+        } catch (Exception e) {
+            log.error("FILE DIRECTORY CREATE { }", e);
+            throw  new ExceptionWithStatusCode(400, "file.directory.create.error");
+        }
+
     }
 }
