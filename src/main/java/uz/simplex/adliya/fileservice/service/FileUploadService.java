@@ -43,14 +43,7 @@ import java.util.Objects;
 public class FileUploadService {
 
     private final FileRepository fileRepository;
-    /*  @Value("${file.server.url}")
-      private String url;
-      @Value("${file.server.port}")
-      private String port;
-      @Value("${file.server.username}")
-      private String username;
-      @Value("${file.server.password}")
-      private String password;*/
+
     @Value("${file.server.directory}")
     private String directoryName;
 
