@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 import uz.simplex.adliya.base.exception.ExceptionWithStatusCode;
 import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
@@ -52,11 +53,23 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public FilePreviewResponse preview(String code) {
-        return null;
+        FileEntity fileEntity = fileRepository.findBySha256(code)
+                .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://165.232.122.8:50000/api/file-service/v1/download")
+                .queryParam("code", fileEntity.getSha256());
+
+
+        return new FilePreviewResponse(
+                uriBuilder.toUriString(),
+                fileEntity.getExtension(),
+                fileEntity.getOriginalName(),
+                fileEntity.getFileSize()
+        );
     }
 
     @Override
-    public ResponseEntity<?> download(String code) {
+    public ResponseEntity<Resource> download(String code) {
         try {
             FileEntity file = fileRepository.findBySha256(code)
                     .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));

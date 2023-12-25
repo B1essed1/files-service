@@ -8,17 +8,14 @@ import org.springframework.web.multipart.MultipartFile;
 import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 import uz.simplex.adliya.fileservice.service.FileService;
-import uz.simplex.adliya.fileservice.service.FileUploadService;
 
 @RequestMapping("/api/file-service/v1")
 @RestController
 public class FileUploadController {
 
-    private final FileUploadService fileUploadService;
     private final FileService fileService;
 
-    public FileUploadController(FileUploadService fileUploadService, FileService fileService) {
-        this.fileUploadService = fileUploadService;
+    public FileUploadController(FileService fileService) {
         this.fileService = fileService;
     }
 
@@ -30,12 +27,12 @@ public class FileUploadController {
 
     @GetMapping("/preview")
     public FilePreviewResponse preview(@RequestParam String code) {
-        return fileUploadService.preview(code);
+        return fileService.preview(code);
     }
 
     @GetMapping("/download")
     public ResponseEntity<Resource> download(@RequestParam String code) {
-         return fileUploadService.download(code);
+         return fileService.download(code);
     }
 
 }
