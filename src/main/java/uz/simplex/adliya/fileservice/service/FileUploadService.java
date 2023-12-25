@@ -221,11 +221,10 @@ public class FileUploadService {
     private BufferedImage generateQRCodeImage(String text) throws WriterException {
         Map<EncodeHintType, Object> hints = new HashMap<>();
         hints.put(EncodeHintType.MARGIN, 0);
-
-        // Set error correction level to H (highest)
         hints.put(EncodeHintType.ERROR_CORRECTION, com.google.zxing.qrcode.decoder.ErrorCorrectionLevel.M);
 
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
+
         BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 300, 300, hints);
 
         BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);

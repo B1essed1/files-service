@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
+import uz.simplex.adliya.fileservice.service.FileService;
 import uz.simplex.adliya.fileservice.service.FileUploadService;
 
 @RequestMapping("/api/file-service/v1")
@@ -14,15 +15,17 @@ import uz.simplex.adliya.fileservice.service.FileUploadService;
 public class FileUploadController {
 
     private final FileUploadService fileUploadService;
+    private final FileService fileService;
 
-    public FileUploadController(FileUploadService fileUploadService) {
+    public FileUploadController(FileUploadService fileUploadService, FileService fileService) {
         this.fileUploadService = fileUploadService;
+        this.fileService = fileService;
     }
 
     @PostMapping(path = "/upload", produces = MediaType.APPLICATION_JSON_VALUE)
     public FileUploadResponse upload(@RequestPart MultipartFile multipartFile,
                                      @RequestParam(value = "isQr", required = false, defaultValue = "false") Boolean isQr) {
-        return fileUploadService.uploadFileAndQr(multipartFile, isQr);
+        return fileService.upload(multipartFile, isQr);
     }
 
     @GetMapping("/preview")
