@@ -42,6 +42,8 @@ public class FileServiceImpl implements FileService {
 
     private String uploadFile(MultipartFile file) {
         Path path = makeDir(file);
+        String code = file.getOriginalFilename()
+        Path filePath = Path.of(path,)
 
         try {
             file.transferTo(path.toFile());
@@ -50,7 +52,6 @@ public class FileServiceImpl implements FileService {
             throw new ExceptionWithStatusCode(400, "file.save.error");
         }
 
-
     }
 
     @Override
@@ -58,7 +59,7 @@ public class FileServiceImpl implements FileService {
         return null;
     }
 
-    private boolean saveEntity(MultipartFile file) {
+    private boolean saveEntity(MultipartFile file, String code,Path path) {
         FileEntity entity = new FileEntity();
         String sha256Hash = createSha256(file.getOriginalFilename() + System.currentTimeMillis());
 
@@ -69,10 +70,10 @@ public class FileServiceImpl implements FileService {
 
         String originalFilename = file.getOriginalFilename();
         entity.setExtension(Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".") + 1));
-        entity.setName(fileName);
+        entity.setName(code);
         entity.setFileSize(String.valueOf(file.getSize()));
         entity.setContentType(file.getContentType());
-        entity.setPath(dayDirectory);
+        entity.setPath(path.toString());
         entity.setSha256(sha256Hash);
         entity.setOriginalName(originalFilename);
         entity.setHashId(null);
