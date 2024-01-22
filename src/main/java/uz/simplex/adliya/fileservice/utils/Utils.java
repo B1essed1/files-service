@@ -25,6 +25,7 @@ public class Utils {
             md = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
             log.error("createSha256 { }", e);
+            // TODO: 12/26/2023 Should we hande properly or is that good 
             throw new RuntimeException(e);
         }
         byte[] digest = md.digest(word.getBytes(StandardCharsets.UTF_8));

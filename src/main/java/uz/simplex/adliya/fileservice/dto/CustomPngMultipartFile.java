@@ -46,7 +46,7 @@ public class CustomPngMultipartFile implements MultipartFile {
     }
 
     @Override
-    public byte[] getBytes() throws IOException {
+    public byte[] getBytes()  {
         return content;
     }
 
@@ -61,12 +61,12 @@ public class CustomPngMultipartFile implements MultipartFile {
     }
 
     @Override
-    public void transferTo(File dest) throws IOException, IllegalStateException {
+    public void transferTo(File dest) throws IllegalStateException {
 
     }
 
     @Override
-    public void transferTo(java.nio.file.Path dest) throws IOException, IllegalStateException {
+    public void transferTo(java.nio.file.Path dest) throws  IllegalStateException {
         // Implement this method if needed
     }
 }

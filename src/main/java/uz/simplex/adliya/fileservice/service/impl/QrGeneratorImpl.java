@@ -38,21 +38,20 @@ public class QrGeneratorImpl implements QrGenerator {
         Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
         hints.put(EncodeHintType.MARGIN, 0);
 
-        /*
+        /**
          * L - Low
-         *
          * Represents the lowest error correction level.
          * Suitable for environments where the QR code is not likely to get damaged, such as when displayed on a screen.
+         * |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
          * M - Medium
-         *
          * Represents a medium level of error correction.
          * This is a balanced level and is often a good choice for general-purpose use, providing a reasonable amount of error correction capability.
+         * ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
          * Q - Quality
-         *
          * Represents a high level of error correction.
          * This level is useful when the QR code is subject to possible damage or distortion, such as when printed on a surface that might be bent or folded.
+         * ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
          * H - High
-         *
          * Represents the highest level of error correction.
          * This level is recommended for situations where the QR code may be exposed to significant damage or distortion, providing the maximum error correction capability.
          */

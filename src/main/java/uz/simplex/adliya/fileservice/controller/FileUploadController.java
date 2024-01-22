@@ -34,5 +34,11 @@ public class FileUploadController {
     public ResponseEntity<Resource> download(@RequestParam String code) {
          return fileService.download(code);
     }
+    public FileUploadResponse update(@RequestPart MultipartFile multipartFile,
+                                           @RequestParam(value = "pkcs7",required = false, defaultValue = "null") String pkcs7,
+                                           @RequestParam("fileId") String fileId) {
+
+         return fileService.attach(multipartFile,fileId,pkcs7);
+    }
 
 }

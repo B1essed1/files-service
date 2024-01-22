@@ -54,6 +54,9 @@ public class FileEntity extends AbstractAuditingEntity {
     @Column(name = "sha256",columnDefinition="VARCHAR(250)")
     private String sha256;
 
+    @Column(name = "pkcs7",columnDefinition="text")
+    private String pkcs7;
+
 
 
     public FileEntity create(MultipartFile file, String fileName, String directory) {
@@ -74,6 +77,7 @@ public class FileEntity extends AbstractAuditingEntity {
         this.setOriginalName(originalFilename);
         this.setHashId(null);
         this.setInnerUrl(previewUrl);
+        /*this.setPkcs7();*/
         return this;
     }
 
