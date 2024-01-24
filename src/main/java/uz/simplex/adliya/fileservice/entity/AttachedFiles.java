@@ -34,17 +34,10 @@ public class AttachedFiles extends AbstractAuditingEntity {
     @Column(name = "attached_file_id", nullable = false)
     private Long attachedFileId;
 
-    @Column(name = "file_sha256")
-    private String fileSha256;
 
-    @Column(name = "attached_file_sha256")
-    private String attachedFileSha256;
-
-    public AttachedFiles create( String fileId, String fileSha256, String attachedFileId, String attachedFileSha256) {
-        this.fileId = Long.valueOf(fileId);
-        this.fileSha256 = fileSha256;
-        this.attachedFileId=  Long.valueOf(attachedFileId);
-        this.attachedFileSha256 = attachedFileSha256;
+    public AttachedFiles create( Long fileId, Long attachedFileId) {
+        this.fileId = fileId;
+        this.attachedFileId = attachedFileId;
         return this;
     }
 }

@@ -42,11 +42,15 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileUploadResponse upload(MultipartFile file, Boolean isQr) {
-        if (Boolean.FALSE.equals(isQr)) {
-            return new FileUploadResponse(uploadFile(file)[0]);
-        } else {
-            return uploadQr(file);
+    public FileUploadResponse upload(MultipartFile file, Boolean isQr, String fileSha, String pkcs7) {
+        if (Objects.nonNull(fileSha)){
+            return attach(file, fileSha,pkcs7);
+        }else {
+            if (Boolean.FALSE.equals(isQr)) {
+                return new FileUploadResponse(uploadFile(file));
+            } else {
+                return uploadQr(file);
+            }
         }
     }
 
@@ -95,9 +99,14 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    @Override
-    public FileUploadResponse attach(MultipartFile file, String fileId, String pkcs7) {
-
+    /***
+     *
+     * @param file
+     * @param fileId
+     * @param pkcs7
+     * @return uploaded files Sha256 code
+     */
+    private FileUploadResponse attach(MultipartFile file, String fileId, String pkcs7) {
         try {
             FileEntity fileEntity = fileRepository.findBySha256(fileId)
                     .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
@@ -109,15 +118,15 @@ public class FileServiceImpl implements FileService {
             if (resource.exists() && resource.isReadable()) {
                 if (Objects.nonNull(pkcs7)) {
                     fileEntity.setPkcs7(pkcs7);
-                    fileRepository.save(fileEntity);
+                    fileEntity =  fileRepository.save(fileEntity);
                 }
-                String[] attachedFileValues = uploadFile(file);
+                String attachedFileUrl = uploadFile(file);
                 AttachedFiles files = new AttachedFiles();
-                attachedFileRepository.save(files.create(fileId, fileEntity.getSha256(), attachedFileValues[1],attachedFileValues[0]));
+                attachedFileRepository.save(files.create(Long.valueOf(fileId),  fileEntity.getId()));
+                return new FileUploadResponse(attachedFileUrl);
             }else {
                 throw new ExceptionWithStatusCode(400, "file.not.found.error");
             }
-            return null;
         }catch (IOException e){
             throw new ExceptionWithStatusCode(400, "file.not.found.error");
         }
@@ -130,15 +139,15 @@ public class FileServiceImpl implements FileService {
      * and saves it to server and returns its
      */
     private FileUploadResponse uploadQr(MultipartFile file) {
-        String url = uploadFile(file)[0];
-        return new FileUploadResponse(uploadFile(qrGenerator.generate(url, file.getName()))[0]);
+        String url = uploadFile(file);
+        return new FileUploadResponse(uploadFile(qrGenerator.generate(url, file.getName())));
     }
 
 
     /**
      * Uploads file to exact directory in the server
      */
-    private String[] uploadFile(MultipartFile file) {
+    private String uploadFile(MultipartFile file) {
 
         Path path = makeDir();
 
@@ -152,17 +161,15 @@ public class FileServiceImpl implements FileService {
         } catch (IOException e) {
             throw new ExceptionWithStatusCode(400, "file.upload.error");
         }
-        return saveEntity(file, code, path.toString());
+        return saveEntity(file, code, path.toString()).getInnerUrl();
     }
 
 
     /**
      * saves the file data to db and returns download url for saved file
      */
-    private String[] saveEntity(MultipartFile file, String fileName, String directory) {
-        FileEntity entity = new FileEntity();
-        entity = fileRepository.save(entity.create(file, fileName, directory));
-        return new String[]{entity.getInnerUrl(), entity.getId().toString()};
+    private FileEntity saveEntity(MultipartFile file, String fileName, String directory) {
+        return  fileRepository.save(new FileEntity().create(file, fileName, directory));
     }
 
 }

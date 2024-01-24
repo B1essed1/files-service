@@ -7,10 +7,8 @@ import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 
 public interface FileService {
-    FileUploadResponse upload(MultipartFile file, Boolean isQr);
+    FileUploadResponse upload(MultipartFile file, Boolean isQr, String fileSha, String  pkcs7);
     FilePreviewResponse preview(String code);
     ResponseEntity<Resource> download(String code);
-
-    FileUploadResponse attach(MultipartFile file, String code, String pkcs7);
 
 }
