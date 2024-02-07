@@ -109,7 +109,7 @@ public class FileUploadService {
             if (success) {
                 String sha256Hash = createSha256(file.getOriginalFilename() + System.currentTimeMillis());
                 // need to change logic for dev and test it for urgent use
-                UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://165.232.122.8:50002/api/file-service/v1/download")
+                UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://165.232.122.8:50001/api/file-service/v1/download")
                         .queryParam("code", sha256Hash);
 
                 previewUrl = uriBuilder.toUriString();
@@ -249,7 +249,7 @@ public class FileUploadService {
         FileEntity fileEntity = fileRepository.findBySha256(code)
                 .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://165.232.122.8:50002/api/file-service/v1/download")
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://165.232.122.8:50001/api/file-service/v1/download")
                 .queryParam("code", fileEntity.getSha256());
 
 
