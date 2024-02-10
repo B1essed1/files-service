@@ -31,4 +31,9 @@ public class FileUploadController {
     public FilePreviewResponse preview(@RequestParam String code) {
         return fileService.preview(code);
     }
+
+    @GetMapping("/download")
+    public FilePreviewResponse download(@RequestParam String code) {
+        return fileService.preview(code);
+    }
 }
