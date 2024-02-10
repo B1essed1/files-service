@@ -1,9 +1,12 @@
 package uz.simplex.adliya.fileservice.entity;
 
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 import uz.simplex.adliya.base.entity.AbstractAuditingEntity;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 
 @Getter
@@ -48,5 +51,32 @@ public class FileEntity extends AbstractAuditingEntity {
 
     @Column(name = "sha256",columnDefinition="VARCHAR(250)")
     private String sha256;
+
+    @Column(name = "pkcs7",columnDefinition="text")
+    private String pkcs7;
+
+
+
+    public FileEntity create(MultipartFile file, String fileName, String directory, String baseUrl) {
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(baseUrl + "/api/file-service/v1/download")
+                .queryParam("code", fileName);
+
+        String previewUrl = uriBuilder.toUriString();
+
+        String originalFilename = file.getOriginalFilename();
+
+        this.setExtension(Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".") + 1));
+        this.setName(file.getName());
+        this.setFileSize(String.valueOf(file.getSize()));
+        this.setContentType(file.getContentType());
+        this.setPath(directory);
+        this.setSha256(fileName);
+        this.setOriginalName(originalFilename);
+        this.setHashId(null);
+        this.setInnerUrl(previewUrl);
+        /*this.setPkcs7();*/
+        return this;
+    }
 
 }

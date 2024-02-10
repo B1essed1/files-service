@@ -10,8 +10,12 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Data
 public class FilePreviewResponse implements Serializable {
+
     private String downloadUri;
+
     private String ext;
+
     private String name;
+
     private String size;
 }

@@ -7,32 +7,35 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
-import uz.simplex.adliya.fileservice.service.FileUploadService;
+import uz.simplex.adliya.fileservice.service.FileService;
+
+import java.io.File;
 
 @RequestMapping("/api/file-service/v1")
 @RestController
 public class FileUploadController {
 
-    private final FileUploadService fileUploadService;
+    private final FileService fileService;
 
-    public FileUploadController(FileUploadService fileUploadService) {
-        this.fileUploadService = fileUploadService;
+    public FileUploadController(FileService fileService) {
+        this.fileService = fileService;
     }
 
     @PostMapping(path = "/upload", produces = MediaType.APPLICATION_JSON_VALUE)
     public FileUploadResponse upload(@RequestPart MultipartFile multipartFile,
-                                     @RequestParam(value = "isQr", required = false, defaultValue = "false") Boolean isQr) {
-        return fileUploadService.uploadFileAndQr(multipartFile, isQr);
+                                     @RequestParam(value = "isQr", required = false, defaultValue = "false") Boolean isQr,
+                                     @RequestParam(value = "pkcs7",required = false) String pkcs7,
+                                     @RequestParam(value = "fileId" , required = false) String fileId) {
+        return fileService.upload(multipartFile, isQr,fileId,pkcs7);
     }
 
     @GetMapping("/preview")
     public FilePreviewResponse preview(@RequestParam String code) {
-        return fileUploadService.preview(code);
+        return fileService.preview(code);
     }
 
-    @GetMapping("/download")
+    @GetMapping(value = "/download")
     public ResponseEntity<Resource> download(@RequestParam String code) {
-         return fileUploadService.download(code);
+        return fileService.download(code);
     }
-
 }
