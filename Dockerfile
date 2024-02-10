@@ -8,7 +8,7 @@ RUN rm -rf /var/cache/apk/*
 
 COPY target/app.jar app.jar
 
-ENTRYPOINT ["java","-jar","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:6000 2","app.jar"]
+ENTRYPOINT ["java","-jar","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:60002","app.jar"]
 #docker build -t gitlab.simplex.uz:5050/project.gov.uz/backend/file-service:latest .
 #docker push gitlab.simplex.uz:5050/project.gov.uz/backend/file-service:latest
 #TEST
