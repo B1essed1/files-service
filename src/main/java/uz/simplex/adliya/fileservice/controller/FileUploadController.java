@@ -33,7 +33,7 @@ public class FileUploadController {
     }
 
     @GetMapping("/download")
-    public FilePreviewResponse download(@RequestParam String code) {
-        return fileService.preview(code);
+    public ResponseEntity<Resource> download(@RequestParam String code) {
+        return fileService.download(code);
     }
 }
