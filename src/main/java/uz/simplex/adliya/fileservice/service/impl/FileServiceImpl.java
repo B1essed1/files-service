@@ -1,6 +1,7 @@
 package uz.simplex.adliya.fileservice.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +36,9 @@ public class FileServiceImpl implements FileService {
 
     private final AttachedFileRepository attachedFileRepository;
 
+    @Value("${file.base.url}")
+    private String BASE_URL;
+
     public FileServiceImpl(FileRepository fileRepository, QrGenerator qrGenerator, AttachedFileRepository attachedFileRepository) {
         this.fileRepository = fileRepository;
         this.qrGenerator = qrGenerator;
@@ -47,7 +51,7 @@ public class FileServiceImpl implements FileService {
             return attach(file, fileSha,pkcs7);
         }else {
             if (Boolean.FALSE.equals(isQr)) {
-                return new FileUploadResponse(uploadFile(file));
+                return new FileUploadResponse(uploadFile(file, BASE_URL));
             } else {
                 return uploadQr(file);
             }
@@ -59,7 +63,7 @@ public class FileServiceImpl implements FileService {
         FileEntity fileEntity = fileRepository.findBySha256(code)
                 .orElseThrow(() -> new ExceptionWithStatusCode(400, "file.not.found"));
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://165.232.122.8:50000/api/file-service/v1/download")
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(BASE_URL+"/api/file-service/v1/download")
                 .queryParam("code", fileEntity.getSha256());
 
 
@@ -120,7 +124,7 @@ public class FileServiceImpl implements FileService {
                     fileEntity.setPkcs7(pkcs7);
                     fileEntity =  fileRepository.save(fileEntity);
                 }
-                String attachedFileUrl = uploadFile(file);
+                String attachedFileUrl = uploadFile(file,BASE_URL);
                 AttachedFiles files = new AttachedFiles();
                 attachedFileRepository.save(files.create(Long.valueOf(fileId),  fileEntity.getId()));
                 return new FileUploadResponse(attachedFileUrl);
@@ -139,15 +143,15 @@ public class FileServiceImpl implements FileService {
      * and saves it to server and returns its
      */
     private FileUploadResponse uploadQr(MultipartFile file) {
-        String url = uploadFile(file);
-        return new FileUploadResponse(uploadFile(qrGenerator.generate(url, file.getName())));
+        String url = uploadFile(file, BASE_URL);
+        return new FileUploadResponse(uploadFile(qrGenerator.generate(url, file.getName()), BASE_URL));
     }
 
 
     /**
      * Uploads file to exact directory in the server
      */
-    private String uploadFile(MultipartFile file) {
+    private String uploadFile(MultipartFile file, String baseUrl) {
 
         Path path = makeDir();
 
@@ -161,15 +165,15 @@ public class FileServiceImpl implements FileService {
         } catch (IOException e) {
             throw new ExceptionWithStatusCode(400, "file.upload.error");
         }
-        return saveEntity(file, code, path.toString()).getInnerUrl();
+        return saveEntity(file, code, path.toString(), baseUrl).getInnerUrl();
     }
 
 
     /**
      * saves the file data to db and returns download url for saved file
      */
-    private FileEntity saveEntity(MultipartFile file, String fileName, String directory) {
-        return  fileRepository.save(new FileEntity().create(file, fileName, directory));
+    private FileEntity saveEntity(MultipartFile file, String fileName, String directory, String baseUrl) {
+        return  fileRepository.save(new FileEntity().create(file, fileName, directory,baseUrl));
     }
 
 }

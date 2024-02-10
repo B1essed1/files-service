@@ -18,7 +18,7 @@ import static uz.simplex.adliya.fileservice.utils.CONSTANTS.BASE_DIR;
 
 @Slf4j
 public class Utils {
-    public static String createSha256(String word) {
+    public static String    createSha256(String word) {
 
         MessageDigest md = null;
         try {

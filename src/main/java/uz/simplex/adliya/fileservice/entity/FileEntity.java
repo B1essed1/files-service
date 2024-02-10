@@ -59,9 +59,9 @@ public class FileEntity extends AbstractAuditingEntity {
 
 
 
-    public FileEntity create(MultipartFile file, String fileName, String directory) {
+    public FileEntity create(MultipartFile file, String fileName, String directory, String baseUrl) {
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(BASE_URL + "/api/file-service/v1/download")
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(baseUrl + "/api/file-service/v1/download")
                 .queryParam("code", fileName);
 
         String previewUrl = uriBuilder.toUriString();
