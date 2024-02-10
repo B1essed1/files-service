@@ -9,6 +9,8 @@ import uz.simplex.adliya.fileservice.dto.FilePreviewResponse;
 import uz.simplex.adliya.fileservice.dto.FileUploadResponse;
 import uz.simplex.adliya.fileservice.service.FileService;
 
+import java.io.File;
+
 @RequestMapping("/api/file-service/v1")
 @RestController
 public class FileUploadController {
@@ -32,7 +34,7 @@ public class FileUploadController {
         return fileService.preview(code);
     }
 
-    @GetMapping("/download")
+    @GetMapping(value = "/download")
     public ResponseEntity<Resource> download(@RequestParam String code) {
         return fileService.download(code);
     }

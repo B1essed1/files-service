@@ -20,6 +20,7 @@ import uz.simplex.adliya.fileservice.repos.FileRepository;
 import uz.simplex.adliya.fileservice.service.FileService;
 import uz.simplex.adliya.fileservice.service.QrGenerator;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -85,7 +86,7 @@ public class FileServiceImpl implements FileService {
 
             Resource resource = new UrlResource(path.toUri());
 
-            if (resource.exists() && resource.isReadable()) {
+            if (resource.isFile()) {
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.valueOf(file.getContentType()));
                 headers.setContentDispositionFormData("attachment", file.getOriginalName());
