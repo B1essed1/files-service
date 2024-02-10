@@ -2,12 +2,14 @@ package uz.simplex.adliya.fileservice.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 import uz.simplex.adliya.base.exception.ExceptionWithStatusCode;
@@ -85,6 +87,8 @@ public class FileServiceImpl implements FileService {
             Path path = getPath(file, code);
 
             Resource resource = new UrlResource(path.toUri());
+            byte[] bytes = StreamUtils.copyToByteArray(resource.getInputStream());
+
 
             if (resource.isFile()) {
                 HttpHeaders headers = new HttpHeaders();
@@ -93,7 +97,7 @@ public class FileServiceImpl implements FileService {
 
                 return ResponseEntity.ok()
                         .headers(headers)
-                        .body(resource);
+                        .body(new ByteArrayResource(bytes));
 
             } else {
                 throw new ExceptionWithStatusCode(400, "file.not.found.error");
