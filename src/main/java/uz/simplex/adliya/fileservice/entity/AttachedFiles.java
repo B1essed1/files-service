@@ -5,15 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriComponentsBuilder;
 import uz.simplex.adliya.base.entity.AbstractAuditingEntity;
 
 import javax.persistence.*;
-import java.util.List;
-import java.util.Objects;
-
-import static uz.simplex.adliya.fileservice.utils.CONSTANTS.BASE_URL;
 
 @Getter
 @Setter

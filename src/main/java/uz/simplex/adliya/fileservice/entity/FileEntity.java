@@ -8,8 +8,6 @@ import uz.simplex.adliya.base.entity.AbstractAuditingEntity;
 import javax.persistence.*;
 import java.util.Objects;
 
-import static uz.simplex.adliya.fileservice.utils.CONSTANTS.BASE_URL;
-
 
 @Getter
 @Setter
