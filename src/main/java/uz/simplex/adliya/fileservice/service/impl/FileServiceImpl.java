@@ -168,6 +168,7 @@ public class FileServiceImpl implements FileService {
         try {
             file.transferTo(filePath.toFile());
         } catch (IOException e) {
+            log.error(e.getMessage(), e);
             throw new ExceptionWithStatusCode(400, "file.upload.error");
         }
         return saveEntity(file, code, path.toString(), baseUrl).getInnerUrl();
