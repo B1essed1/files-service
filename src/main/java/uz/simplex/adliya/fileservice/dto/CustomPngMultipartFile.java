@@ -1,13 +1,18 @@
 package uz.simplex.adliya.fileservice.dto;
 
+import org.apache.commons.fileupload.FileUploadException;
 import org.springframework.core.io.Resource;
+import org.springframework.core.log.LogFormatUtils;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNullApi;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 public class CustomPngMultipartFile implements MultipartFile {
 
@@ -61,12 +66,12 @@ public class CustomPngMultipartFile implements MultipartFile {
     }
 
     @Override
-    public void transferTo(File dest) throws IllegalStateException {
-
+    public void transferTo(File dest) throws IllegalStateException, IOException {
+       transferTo(dest.toPath());
     }
 
     @Override
-    public void transferTo(java.nio.file.Path dest) throws  IllegalStateException {
-        // Implement this method if needed
+    public void transferTo(java.nio.file.Path dest) throws IllegalStateException, IOException {
+        FileCopyUtils.copy(getInputStream(), Files.newOutputStream(dest));
     }
 }
