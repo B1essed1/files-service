@@ -54,7 +54,7 @@ public class FileServiceImpl implements FileService {
             return attach(file, fileSha,pkcs7);
         }else {
             if (Boolean.FALSE.equals(isQr)) {
-                return new FileUploadResponse(uploadFile(file, BASE_URL));
+                return upload(file);
             } else {
                 return uploadQr(file);
             }
@@ -87,10 +87,13 @@ public class FileServiceImpl implements FileService {
             Path path = getPath(file, code);
 
             Resource resource = new UrlResource(path.toUri());
-            byte[] bytes = StreamUtils.copyToByteArray(resource.getInputStream());
 
 
-            if (resource.isFile()) {
+
+            if (resource.exists()&&resource.isReadable()) {
+
+                byte[] bytes = StreamUtils.copyToByteArray(resource.getInputStream());
+
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.valueOf(file.getContentType()));
                 headers.setContentDispositionFormData("attachment", file.getOriginalName());
@@ -149,9 +152,16 @@ public class FileServiceImpl implements FileService {
      */
     private FileUploadResponse uploadQr(MultipartFile file) {
         String url = uploadFile(file, BASE_URL);
-        return new FileUploadResponse(uploadFile(qrGenerator.generate(url, file.getName()), BASE_URL));
+
+        MultipartFile qrImage =  qrGenerator.generate(url, file.getName());
+        String qrUrl = uploadFile(qrImage, BASE_URL);
+
+        return new FileUploadResponse(qrUrl);
     }
 
+    private FileUploadResponse upload(MultipartFile file){
+        return new FileUploadResponse(uploadFile(file,BASE_URL));
+    }
 
     /**
      * Uploads file to exact directory in the server
@@ -170,15 +180,15 @@ public class FileServiceImpl implements FileService {
         } catch (IOException e) {
             throw new ExceptionWithStatusCode(400, "file.upload.error");
         }
-        return saveEntity(file, code, path.toString(), baseUrl).getInnerUrl();
+        return saveEntity(file, code, path.toString(), baseUrl);
     }
 
 
     /**
      * saves the file data to db and returns download url for saved file
      */
-    private FileEntity saveEntity(MultipartFile file, String fileName, String directory, String baseUrl) {
-        return  fileRepository.save(new FileEntity().create(file, fileName, directory,baseUrl));
+    private String saveEntity(MultipartFile file, String fileName, String directory, String baseUrl) {
+        return  fileRepository.save(new FileEntity().create(file, fileName, directory,baseUrl)).getInnerUrl();
     }
 
 }
