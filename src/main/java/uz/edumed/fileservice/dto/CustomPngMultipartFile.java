@@ -1,4 +1,4 @@
-package uz.simplex.adliya.fileservice.dto;
+package uz.edumed.fileservice.dto;
 
 import org.apache.commons.fileupload.FileUploadException;
 import org.springframework.core.io.Resource;

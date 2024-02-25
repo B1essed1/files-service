@@ -1,4 +1,4 @@
-package uz.simplex.adliya.fileservice.service.impl;
+package uz.edumed.fileservice.service.impl;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -7,8 +7,8 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import uz.simplex.adliya.fileservice.dto.CustomPngMultipartFile;
-import uz.simplex.adliya.fileservice.service.QrGenerator;
+import uz.edumed.fileservice.dto.CustomPngMultipartFile;
+import uz.edumed.fileservice.service.QrGenerator;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

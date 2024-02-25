@@ -1,4 +1,4 @@
-package uz.simplex.adliya.fileservice.service;
+package uz.edumed.fileservice.service;
 
 
 import org.springframework.web.multipart.MultipartFile;

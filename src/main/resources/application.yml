@@ -1,0 +1,31 @@
+server:
+  port: 9060
+spring:
+  profiles:
+    active: local
+
+
+
+  # JPA Configuration
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Spring MVC Configuration
+  mvc:
+    pathmatch:
+      matching-strategy: ant-path-matcher
+
+  management:
+    endpoints:
+      web:
+        exposure:
+          include=*
+  datasource:
+    url: jdbc:postgresql://localhost:5444/edumed#test
+    username: blessed
+    password: password123

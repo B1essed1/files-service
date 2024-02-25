@@ -1,13 +1,10 @@
-package uz.simplex.adliya.fileservice;
+package uz.edumed.fileservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-@SpringBootApplication(scanBasePackages = "uz.simplex.adliya" )
-@EnableDiscoveryClient
+@SpringBootApplication(scanBasePackages = "uz.edumed.fileservice" )
 @EnableAsync
 public class FileServiceApplication {
 

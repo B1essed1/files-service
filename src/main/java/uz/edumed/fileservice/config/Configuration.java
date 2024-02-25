@@ -1,4 +1,4 @@
-package uz.simplex.adliya.fileservice.config;
+package uz.edumed.fileservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.multipart.MultipartResolver;

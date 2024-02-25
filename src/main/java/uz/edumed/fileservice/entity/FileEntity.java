@@ -1,10 +1,8 @@
-package uz.simplex.adliya.fileservice.entity;
+package uz.edumed.fileservice.entity;
 
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
-import uz.simplex.adliya.base.entity.AbstractAuditingEntity;
-
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -15,7 +13,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @Entity
 @Table(name = "files")
-public class FileEntity extends AbstractAuditingEntity {
+public class FileEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

@@ -1,4 +1,4 @@
-package uz.simplex.adliya.fileservice.dto;
+package uz.edumed.fileservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
