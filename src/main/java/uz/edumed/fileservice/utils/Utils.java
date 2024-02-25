@@ -2,8 +2,8 @@ package uz.edumed.fileservice.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
-import uz.simplex.adliya.base.exception.ExceptionWithStatusCode;
 import uz.edumed.fileservice.entity.FileEntity;
+import uz.edumed.fileservice.exception.ExceptionWithStatusCode;
 
 import javax.xml.bind.DatatypeConverter;
 import java.nio.charset.StandardCharsets;

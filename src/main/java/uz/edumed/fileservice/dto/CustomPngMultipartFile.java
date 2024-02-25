@@ -1,10 +1,8 @@
 package uz.edumed.fileservice.dto;
 
-import org.apache.commons.fileupload.FileUploadException;
 import org.springframework.core.io.Resource;
-import org.springframework.core.log.LogFormatUtils;
+
 import org.springframework.http.MediaType;
-import org.springframework.lang.NonNullApi;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
